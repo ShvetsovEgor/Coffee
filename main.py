@@ -2,19 +2,21 @@ import sqlite3
 import sys
 import traceback
 
-from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog
 
+from addEditCoffeeForm import Ui_Dialog
+from main_ui import Ui_MainWindow
 
-class Dialog(QDialog):
+
+class Dialog(QDialog, Ui_Dialog):
     def __init__(self, parent, selected=""):
         super().__init__()
         self.selected = selected
         self.parent = parent
-        uic.loadUi("addEditCoffeeForm.ui", self)
+        self.setupUi(self)
         self.setWindowTitle("Изменение данных")
         self.pushButton.clicked.connect(self.submit)
-        con = sqlite3.connect("coffee.sqlite")
+        con = sqlite3.connect("data/coffee.sqlite")
         cur = con.cursor()
         if self.selected:
             res = cur.execute(f"""SELECT * FROM price WHERE id = {int(self.selected)}""").fetchone()
@@ -28,7 +30,7 @@ class Dialog(QDialog):
         self.lineEdit_4.setText(str(weight))
 
     def submit(self):
-        con = sqlite3.connect("coffee.sqlite")
+        con = sqlite3.connect("data/coffee.sqlite")
         cur = con.cursor()
         # получение данных
         try:
@@ -50,10 +52,10 @@ class Dialog(QDialog):
             self.parent.statusBar().showMessage(f"Ошибка {e}")
 
 
-class Example(QMainWindow):
+class Example(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi("main.ui", self)
+        self.setupUi(self)
         self.setWindowTitle("Отображение информации о кофе")
         self.tableWidget.cellDoubleClicked.connect(self.change)
         self.fill()
@@ -67,7 +69,7 @@ class Example(QMainWindow):
             self.d.show()
 
     def fill(self):
-        con = sqlite3.connect("coffee.sqlite")
+        con = sqlite3.connect("data/coffee.sqlite")
         cur = con.cursor()
         result = cur.execute(f"""SELECT * FROM price""").fetchall()
         self.tableWidget.setRowCount(len(result) + 1)
